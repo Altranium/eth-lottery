@@ -21,8 +21,19 @@ contract Lottery {
         return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, players)));    // Uses block & now global variable
     }
 
-    function pickWinner() public {
+    function pickWinner() public restricted {
         uint index = random() % players.length;
         players[index].transfer(address(this).balance);      // Transfer the contract's balance to the winner
+        players = new address[](0);                          // Empty players array for new round without redeploying the contract
+    }
+
+    // Reusable code
+    modifier restricted() {
+        require(msg.sender == manager, 'Account is not the manager to pick the winner');
+        _;  // Represents where code will be inserted if restricted is used for methods
+    }
+
+    function getPlayers() public view returns (address[]) {
+        return players;
     }
 }
